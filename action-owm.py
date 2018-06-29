@@ -9,7 +9,9 @@ from hermes_python.hermes import Hermes
 import hermes_python
 import io
 import os
+import paho.mqtt.client as mqtt
 from snipsowm.snipsowm import SnipsOWM
+import threading
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
@@ -20,8 +22,32 @@ MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
 
 DIR = os.path.dirname(os.path.realpath(__file__)) + '/alarm/'
 
+alive = 0;
 lang = "EN"
 
+client = None
+pingTopic = 'concierge/apps/live/ping'
+pongTopic = 'concierge/apps/live/pong'
+
+def on_connect(client, userdata, flags, rc):
+    if (alive > 0):
+        client.subscribe(pingTopic)
+
+def on_message(client, userdata, msg):
+    client.publish(pongTopic, '{"result":"snips-skill-owm"}')
+
+def setTimer():
+    global alive
+    alive += 1
+    client.subscribe(pingTopic)
+    t = threading.Timer(300, runTimer)
+    t.start()
+
+def runTimer():
+    global alive
+    alive -= 1
+    if (alive <= 0):
+        client.unsubscribe(pingTopic)
 
 class SnipsConfigParser(ConfigParser.SafeConfigParser):
     def to_dict(self):
@@ -119,6 +145,7 @@ def getGranurality(datetime):
         return 0
 
 def searchWeatherForecastTemperature(hermes, intent_message):
+    setTimer()
     datetime = getDateTime(intent_message)
     granularity = getGranurality(datetime)
     locality = getAnyLocality(intent_message)
@@ -127,6 +154,7 @@ def searchWeatherForecastTemperature(hermes, intent_message):
     hermes.publish_end_session(current_session_id, res)
 
 def searchWeatherForecastCondition(hermes, intent_message):
+    setTimer()
     datetime = getDateTime(intent_message)
     granularity = getGranurality(datetime)
     condition = getCondition(intent_message)
@@ -142,6 +170,7 @@ def searchWeatherForecastCondition(hermes, intent_message):
     hermes.publish_end_session(current_session_id, res)
 
 def searchWeatherForecast(hermes, intent_message):
+    setTimer()
     datetime = getDateTime(intent_message)
     granularity = getGranurality(datetime)
     # No condition in this intent so initialized to None
@@ -158,6 +187,7 @@ def searchWeatherForecast(hermes, intent_message):
     hermes.publish_end_session(current_session_id, res)
 
 def searchWeatherForecastItem(hermes, intent_message):
+    setTimer()
     datetime = getDateTime(intent_message)
     granularity = getGranurality(datetime)
     item_name = getItemName(intent_message)
@@ -177,6 +207,11 @@ def searchWeatherForecastItem(hermes, intent_message):
 
 
 if __name__ == "__main__":
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_message = on_message
+    client.connect(MQTT_IP_ADDR)
+    client.loop_start()
     config = read_configuration_file("config.ini")
 
     if config.get("secret").get("api_key") is None:
