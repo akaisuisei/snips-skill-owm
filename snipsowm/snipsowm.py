@@ -46,7 +46,7 @@ class SnipsOWM:
             locality = self.default_location
 
         try:
-            _, temperature = self.provider.get_weather(locality, datetime=date)
+            actual_condition, temperature = self.provider.get_weather(locality, datetime=date)
 
             generated_sentence = sentence_generator.generate_temperature_sentence(temperature=temperature,
                                                                                   date=date, granularity=0,
@@ -58,7 +58,9 @@ class SnipsOWM:
         except SentenceGenerationLocaleException:
             generated_sentence = sentence_generator.generate_error_locale_sentence()
 
-        return generated_sentence
+        actual_condition_group = weather_condition.OWMToWeatherConditionMapper(actual_condition).resolve()
+        return generated_sentence, to_led(temperature, actual_condition_group)
+
 
     def speak_condition(self, assumed_condition, date, POI=None, Locality=None, Region=None, Country=None,
                         granularity=0):
@@ -146,7 +148,8 @@ class SnipsOWM:
         except WeatherProviderInvalidAPIKey:
             generated_sentence = sentence_generator.generate_api_key_error_sentence()
 
-        return generated_sentence
+        return generated_sentence, to_led(temperature, actual_condition_group)
+
 
     def speak_item(self, item_name, date, POI=None, Locality=None, Region=None, Country=None,
                    granularity=0):
@@ -234,4 +237,25 @@ class SnipsOWM:
         except WeatherProviderInvalidAPIKey:
             generated_sentence = sentence_generator.generate_api_key_error_sentence()
 
-        return generated_sentence
+        return generated_sentence, to_led(temperature, actual_condition_group)
+
+def to_led(temp, weather):
+    print(weather.value)
+    w = {
+      weather_condition.WeatherConditions.UNKNOWN : '"none"',
+      weather_condition.WeatherConditions.DRIZZLE : '"partialCloud"',
+      weather_condition.WeatherConditions.RAIN : '"rain"',
+      weather_condition.WeatherConditions.SNOW : '"rain"',
+      weather_condition.WeatherConditions.FOG : '"cloud"',
+      weather_condition.WeatherConditions.SUN : '"sun"',
+      weather_condition.WeatherConditions.CLOUDS : '"cloud"',
+      weather_condition.WeatherConditions.STORM : '"storm"',
+      weather_condition.WeatherConditions.HUMID : '"cloud"',
+      weather_condition.WeatherConditions.WIND : '"partialCloud"',
+      weather_condition.WeatherConditions.THUNDERSTORM : '"storm"'
+    }.get(weather.value, None)
+    if w is None:
+        w = '"none"'
+    if temp is None:
+        temp = 99
+    return '{"weather":%s, "temp":%d}' % (w, temp)
