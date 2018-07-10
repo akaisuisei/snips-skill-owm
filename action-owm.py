@@ -12,6 +12,7 @@ import os
 import paho.mqtt.client as mqtt
 from snipsowm.snipsowm import SnipsOWM
 import threading
+import unicodedata
 
 CONFIGURATION_ENCODING_FORMAT = "utf-8"
 CONFIG_INI = "config.ini"
@@ -63,7 +64,8 @@ def read_configuration_file(configuration_file):
         return dict()
 
 def to_unicode(val):
-    return val.decode('latin-1').encode('utf-8')
+    res = unicodedata.normalize('NFKD', val.decode('utf-8'))
+    return unicode(res.encode('ascii', 'ignore'))
 
 def getCondition(snips):
       # Determine condition
