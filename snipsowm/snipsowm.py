@@ -112,7 +112,8 @@ class SnipsOWM:
         # We retrieve the condition and the temperature from our weather provider
         actual_condition_group = weather_condition.WeatherConditionDescriptor(
             weather_condition.WeatherConditions.UNKNOWN)
-
+        temperature = 0
+        actual_condition = None
         sentence_generator = ConditionQuerySentenceGenerator(locale=self.locale)
         try:
             actual_condition, temperature = self.provider.get_weather(locality, date)
