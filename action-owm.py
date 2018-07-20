@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 # -*-: coding utf-8 -*-
 
+from concierge_python.concierge import Concierge
 import ConfigParser
 from datetime import datetime
 import datetime as dt
@@ -9,7 +10,6 @@ from hermes_python.hermes import Hermes
 import hermes_python
 import io
 import os
-import paho.mqtt.client as mqtt
 from snipsowm.snipsowm import SnipsOWM
 import threading
 import unicodedata
@@ -22,33 +22,31 @@ MQTT_PORT = 1883
 MQTT_ADDR = "{}:{}".format(MQTT_IP_ADDR, str(MQTT_PORT))
 
 DIR = os.path.dirname(os.path.realpath(__file__)) + '/alarm/'
-
+_id = "snips-skill-owm"
 alive = 0;
 lang = "EN"
 
 client = None
 pingTopic = 'concierge/apps/live/ping'
 pongTopic = 'concierge/apps/live/pong'
+c = Concierge(MQTT_IP_ADDR)
 
-def on_connect(client, userdata, flags, rc):
+def on_ping(client, userdata, msg):
     if (alive > 0):
-        client.subscribe(pingTopic)
+        c.publishPong(_id)
 
-def on_message(client, userdata, msg):
-    client.publish(pongTopic, '{"result":"snips-skill-owm"}')
+def on_view(client, userdata, msg):
+    pass
 
 def setTimer():
     global alive
     alive += 1
-    client.subscribe(pingTopic)
     t = threading.Timer(300, runTimer)
     t.start()
 
 def runTimer():
     global alive
     alive -= 1
-    if (alive <= 0):
-        client.unsubscribe(pingTopic)
 
 class SnipsConfigParser(ConfigParser.SafeConfigParser):
     def to_dict(self):
@@ -158,7 +156,7 @@ def searchWeatherForecastTemperature(hermes, intent_message):
     res, led = hermes.skill.speak_temperature(locality, datetime, granularity)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    send_to_led(led)
+    c.publishWeather(led[0], led[1])
     print(res)
 
 def searchWeatherForecastCondition(hermes, intent_message):
@@ -176,7 +174,7 @@ def searchWeatherForecastCondition(hermes, intent_message):
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    send_to_led(led)
+    c.publishWeather(led[0], led[1])
     print(res)
 
 def searchWeatherForecast(hermes, intent_message):
@@ -195,7 +193,7 @@ def searchWeatherForecast(hermes, intent_message):
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    send_to_led(led)
+    c.publishWeather(led[0], led[1])
     print(res)
 
 def searchWeatherForecastItem(hermes, intent_message):
@@ -218,19 +216,12 @@ def searchWeatherForecastItem(hermes, intent_message):
     hermes.publish_end_session(current_session_id, res)
 
     send_to_led(led)
+    c.publishWeather(led[0], led[1])
     print(res)
 
-def send_to_led(cond):
-    ledTopicSend = 'concierge/feedback/led/default/weather'
-    print(cond)
-    client.publish(ledTopicSend, cond)
-
 if __name__ == "__main__":
-    client = mqtt.Client()
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect(MQTT_IP_ADDR)
-    client.loop_start()
+    c.subscribePing(on_ping)
+    c.subscribeView(_id, on_view)
     config = read_configuration_file("config.ini")
 
     if config.get("secret").get("api_key") is None:

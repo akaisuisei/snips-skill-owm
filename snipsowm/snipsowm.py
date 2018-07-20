@@ -259,4 +259,4 @@ def to_led(temp, weather):
         w = '"none"'
     if temp is None:
         temp = 99
-    return '{"weather":%s, "temp":%d}' % (w, temp)
+    return (w, temp)
