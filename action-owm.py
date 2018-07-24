@@ -31,11 +31,11 @@ pingTopic = 'concierge/apps/live/ping'
 pongTopic = 'concierge/apps/live/pong'
 c = Concierge(MQTT_IP_ADDR)
 
-def on_ping(client, userdata, msg):
+def on_ping(client):
     if (alive > 0):
         c.publishPong(_id)
 
-def on_view(client, userdata, msg):
+def on_view(client):
     pass
 
 def setTimer():
