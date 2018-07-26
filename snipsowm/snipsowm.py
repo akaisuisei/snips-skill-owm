@@ -243,17 +243,17 @@ class SnipsOWM:
 def to_led(temp, weather):
     print(weather.value)
     w = {
-      weather_condition.WeatherConditions.UNKNOWN : '"none"',
-      weather_condition.WeatherConditions.DRIZZLE : '"partialCloud"',
-      weather_condition.WeatherConditions.RAIN : '"rain"',
-      weather_condition.WeatherConditions.SNOW : '"rain"',
-      weather_condition.WeatherConditions.FOG : '"cloud"',
-      weather_condition.WeatherConditions.SUN : '"sun"',
-      weather_condition.WeatherConditions.CLOUDS : '"cloud"',
-      weather_condition.WeatherConditions.STORM : '"storm"',
-      weather_condition.WeatherConditions.HUMID : '"cloud"',
-      weather_condition.WeatherConditions.WIND : '"partialCloud"',
-      weather_condition.WeatherConditions.THUNDERSTORM : '"storm"'
+      weather_condition.WeatherConditions.UNKNOWN : 'none',
+      weather_condition.WeatherConditions.DRIZZLE : 'partialCloud',
+      weather_condition.WeatherConditions.RAIN : 'rain',
+      weather_condition.WeatherConditions.SNOW : 'rain',
+      weather_condition.WeatherConditions.FOG : 'cloud',
+      weather_condition.WeatherConditions.SUN : 'sun',
+      weather_condition.WeatherConditions.CLOUDS : 'cloud',
+      weather_condition.WeatherConditions.STORM : 'storm',
+      weather_condition.WeatherConditions.HUMID : 'cloud',
+      weather_condition.WeatherConditions.WIND : 'partialCloud',
+      weather_condition.WeatherConditions.THUNDERSTORM : 'storm'
     }.get(weather.value, None)
     if w is None:
         w = '"none"'
