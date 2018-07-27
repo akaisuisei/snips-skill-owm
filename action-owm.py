@@ -156,7 +156,7 @@ def searchWeatherForecastTemperature(hermes, intent_message):
     res, led = hermes.skill.speak_temperature(locality, datetime, granularity)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    c.publishWeather(led[0], led[1])
+    c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
 def searchWeatherForecastCondition(hermes, intent_message):
@@ -174,7 +174,7 @@ def searchWeatherForecastCondition(hermes, intent_message):
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    c.publishWeather(led[0], led[1])
+    c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
 def searchWeatherForecast(hermes, intent_message):
@@ -193,7 +193,7 @@ def searchWeatherForecast(hermes, intent_message):
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
     hermes.publish_end_session(current_session_id, res)
-    c.publishWeather(led[0], led[1])
+    c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
 def searchWeatherForecastItem(hermes, intent_message):
@@ -216,7 +216,7 @@ def searchWeatherForecastItem(hermes, intent_message):
     hermes.publish_end_session(current_session_id, res)
 
     send_to_led(led)
-    c.publishWeather(led[0], led[1])
+    c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
 if __name__ == "__main__":
