@@ -155,7 +155,7 @@ def searchWeatherForecastTemperature(hermes, intent_message):
     locality = getAnyLocality(intent_message)
     res, led = hermes.skill.speak_temperature(locality, datetime, granularity)
     current_session_id = intent_message.session_id
-    hermes.publish_end_session(current_session_id, res)
+    hermes.publish_end_session(current_session_id, res.decode("utf-8"))
     c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
@@ -173,7 +173,7 @@ def searchWeatherForecastCondition(hermes, intent_message):
                                Region=region, Country=country,
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
-    hermes.publish_end_session(current_session_id, res)
+    hermes.publish_end_session(current_session_id, res.decode("utf-8"))
     c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
@@ -192,7 +192,7 @@ def searchWeatherForecast(hermes, intent_message):
                                Region=region, Country=country,
                                POI=geographical_poi)
     current_session_id = intent_message.session_id
-    hermes.publish_end_session(current_session_id, res)
+    hermes.publish_end_session(current_session_id, res.decode("utf-8"))
     c.publishWeather(led[0], led[1], intent_message.site_id)
     print(res)
 
@@ -213,7 +213,7 @@ def searchWeatherForecastItem(hermes, intent_message):
                                  Country=country,
                                  POI=geographical_poi)
     current_session_id = intent_message.session_id
-    hermes.publish_end_session(current_session_id, res)
+    hermes.publish_end_session(current_session_id, res.decode("utf-8"))
 
     send_to_led(led)
     c.publishWeather(led[0], led[1], intent_message.site_id)
